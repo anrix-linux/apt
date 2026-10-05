@@ -450,6 +450,8 @@ bool BaseX509Store::Impl::ReadSignatureBlocks(FileFd &signature,
 
       if (derLen < 0)
 	 return blockErrScope.Error(_("VerifyDetach: signature block has a negative length"));
+      // defense-in-depth: fileSize > MaxSignatureBytes already prevents this,
+      // the DER payload is always smaller than its base64 PEM encoding.
       total += static_cast<unsigned long long>(derLen);
       if (total > MaxSignatureBytes)
 	 return blockErrScope.Error(_("VerifyDetach: signature file exceeds %llu bytes"),
