@@ -411,7 +411,11 @@ static ResultState UnwrapHTTPConnect(std::string Host, int Port, URI Proxy, std:
 HttpServerState::HttpServerState(URI Srv, HttpMethod *Owner) : ServerState(Srv, Owner), In(Owner, APT_BUFFER_SIZE), Out(Owner, 4 * 1024)
 {
    TimeOut = Owner->ConfigFindI("Timeout", TimeOut);
+   DlTimeout = Owner->ConfigFindI("DlTimeout", 0);
+   DlMinimumSpeed = Owner->ConfigFindI("DlMinimumSpeed", 0);
+   DlMinimumSpeedWindow = Owner->ConfigFindI("DlMinimumSpeedWindow", 60);
    ServerFd = MethodFd::FromFd(-1);
+   TransferStarted = false;
    Reset();
 }
 									/*}}}*/
@@ -551,7 +555,16 @@ bool HttpServerState::Close()
 ResultState HttpServerState::RunData(RequestState &Req)
 {
    Req.State = RequestState::Data;
-   
+
+   // Reset per-file transfer tracking. This must be unconditional (no guard) so
+   // that keep-alive connections reused for subsequent files always start fresh.
+   // TransferStarted also guards the checks in Go(), preventing them from firing
+   // during the header phase (LoadNextResponse calls Go() before RunData()).
+   TransferStart = std::chrono::steady_clock::now();
+   SpeedWindowStart = TransferStart;
+   SpeedPrevTotalWriten = In.TotalWriten;
+   TransferStarted = true;
+
    // Chunked transfer encoding is fun..
    if (Req.Encoding == RequestState::Chunked)
    {
@@ -583,6 +596,8 @@ ResultState HttpServerState::RunData(RequestState &Req)
 	       if (In.WriteTillEl(Data,true) == true && Data.length() <= 2)
 		  break;
 	    } while ((Last = Go(false, Req)) == ResultState::SUCCESSFUL);
+	    if (Last == ResultState::SUCCESSFUL)
+	       TransferStarted = false;
 	    return Last;
 	 }
 
@@ -640,12 +655,15 @@ ResultState HttpServerState::RunData(RequestState &Req)
 	 }
 
 	 In.Limit(-1);
+	 if (_error->PendingError() == false)
+	    TransferStarted = false;
 	 return _error->PendingError() ? ResultState::FATAL_ERROR : ResultState::SUCCESSFUL;
       }
    }
 
    if (Flush(&Req.File) == false)
       return ResultState::TRANSIENT_ERROR;
+   TransferStarted = false;
    return ResultState::SUCCESSFUL;
 }
 									/*}}}*/
@@ -689,6 +707,7 @@ void HttpServerState::Reset()						/*{{{*/
 {
    ServerState::Reset();
    ServerFd->Close();
+   TransferStarted = false;
 }
 									/*}}}*/
 
@@ -867,6 +886,37 @@ ResultState HttpServerState::Go(bool ToFile, RequestState &Req)
    {
       if (Owner->Run(true) != -1)
 	 exit(100);
+   }
+
+   // Check overall transfer duration limit (Acquire::http::DlTimeout)
+   if (TransferStarted && DlTimeout > 0 &&
+       std::chrono::steady_clock::now() - TransferStart > std::chrono::seconds(DlTimeout))
+   {
+      Owner->SetFailReason("Timeout");
+      _error->Error(_("Transfer timed out: download did not complete within %i seconds"), DlTimeout);
+      return ResultState::TRANSIENT_ERROR;
+   }
+
+   // Check minimum transfer rate (Acquire::http::DlMinimumSpeed)
+   if (TransferStarted && DlMinimumSpeed > 0 && DlMinimumSpeedWindow > 0)
+   {
+      auto const now = std::chrono::steady_clock::now();
+      auto const elapsed = now - SpeedWindowStart;
+      if (elapsed >= std::chrono::seconds(DlMinimumSpeedWindow))
+      {
+	 unsigned long long const bytesDelta = In.TotalWriten - SpeedPrevTotalWriten;
+	 double const elapsedSec = std::chrono::duration<double>(elapsed).count();
+	 double const kbps = (bytesDelta / 1024.0) / elapsedSec;
+	 if (kbps < DlMinimumSpeed)
+	 {
+	    Owner->SetFailReason("Timeout");
+	    _error->Error(_("Download too slow: %.0f KB/s below minimum %i KB/s"), kbps, DlMinimumSpeed);
+	    return ResultState::TRANSIENT_ERROR;
+	 }
+	 // Reset the measurement window
+	 SpeedWindowStart = now;
+	 SpeedPrevTotalWriten = In.TotalWriten;
+      }
    }
 
    return ResultState::SUCCESSFUL;

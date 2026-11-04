@@ -97,6 +97,17 @@ struct HttpServerState final : public ServerState
    CircleBuf Out;
    std::unique_ptr<MethodFd> ServerFd;
 
+   // Transfer duration tracking for DlTimeout
+   std::chrono::steady_clock::time_point TransferStart;
+   bool TransferStarted;
+   int DlTimeout;
+
+   // Transfer rate tracking for DlMinimumSpeed
+   std::chrono::steady_clock::time_point SpeedWindowStart;
+   unsigned long long SpeedPrevTotalWriten;
+   int DlMinimumSpeed;
+   int DlMinimumSpeedWindow;
+
    protected:
    bool ReadHeaderLines(std::string &Data) override;
    ResultState LoadNextResponse(bool ToFile, RequestState &Req) override;

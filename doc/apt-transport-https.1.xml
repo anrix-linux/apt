@@ -106,6 +106,9 @@ Acquire::https {
 	Max-Age "3600";
 	No-Store "true";
 	Timeout "10";
+	DlTimeout "1200";
+	DlMinimumSpeed "100";
+	DlMinimumSpeedWindow "60";
 	Dl-Limit "42";
 	Pipeline-Depth "0";
 	AllowRedirect "false";
