@@ -412,6 +412,8 @@ HttpServerState::HttpServerState(URI Srv, HttpMethod *Owner) : ServerState(Srv, 
 {
    TimeOut = Owner->ConfigFindI("Timeout", TimeOut);
    DlTimeout = Owner->ConfigFindI("DlTimeout", 0);
+   DlMinimumSpeed = Owner->ConfigFindI("DlMinimumSpeed", 0);
+   DlMinimumSpeedWindow = Owner->ConfigFindI("DlMinimumSpeedWindow", 60);
    ServerFd = MethodFd::FromFd(-1);
    TransferStarted = false;
    Reset();
@@ -559,6 +561,8 @@ ResultState HttpServerState::RunData(RequestState &Req)
    // TransferStarted also guards the checks in Go(), preventing them from firing
    // during the header phase (LoadNextResponse calls Go() before RunData()).
    TransferStart = std::chrono::steady_clock::now();
+   SpeedWindowStart = TransferStart;
+   SpeedPrevTotalWriten = In.TotalWriten;
    TransferStarted = true;
 
    // Chunked transfer encoding is fun..
@@ -891,6 +895,28 @@ ResultState HttpServerState::Go(bool ToFile, RequestState &Req)
       Owner->SetFailReason("Timeout");
       _error->Error(_("Transfer timed out: download did not complete within %i seconds"), DlTimeout);
       return ResultState::TRANSIENT_ERROR;
+   }
+
+   // Check minimum transfer rate (Acquire::http::DlMinimumSpeed)
+   if (TransferStarted && DlMinimumSpeed > 0 && DlMinimumSpeedWindow > 0)
+   {
+      auto const now = std::chrono::steady_clock::now();
+      auto const elapsed = now - SpeedWindowStart;
+      if (elapsed >= std::chrono::seconds(DlMinimumSpeedWindow))
+      {
+	 unsigned long long const bytesDelta = In.TotalWriten - SpeedPrevTotalWriten;
+	 double const elapsedSec = std::chrono::duration<double>(elapsed).count();
+	 double const kbps = (bytesDelta / 1024.0) / elapsedSec;
+	 if (kbps < DlMinimumSpeed)
+	 {
+	    Owner->SetFailReason("Timeout");
+	    _error->Error(_("Download too slow: %.0f KB/s below minimum %i KB/s"), kbps, DlMinimumSpeed);
+	    return ResultState::TRANSIENT_ERROR;
+	 }
+	 // Reset the measurement window
+	 SpeedWindowStart = now;
+	 SpeedPrevTotalWriten = In.TotalWriten;
+      }
    }
 
    return ResultState::SUCCESSFUL;

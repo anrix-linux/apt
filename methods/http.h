@@ -102,6 +102,12 @@ struct HttpServerState final : public ServerState
    bool TransferStarted;
    int DlTimeout;
 
+   // Transfer rate tracking for DlMinimumSpeed
+   std::chrono::steady_clock::time_point SpeedWindowStart;
+   unsigned long long SpeedPrevTotalWriten;
+   int DlMinimumSpeed;
+   int DlMinimumSpeedWindow;
+
    protected:
    bool ReadHeaderLines(std::string &Data) override;
    ResultState LoadNextResponse(bool ToFile, RequestState &Req) override;
