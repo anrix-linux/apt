@@ -84,7 +84,24 @@ configuration is already set via <literal>Acquire::http::Proxy::<replaceable>hos
 
 <refsect2><title>Connection Configuration</title>
 <para>The option <literal>Acquire::http::Timeout</literal> sets the timeout timer used by the method;
-this value applies to the connection as well as the data timeout.</para>
+this value applies to the connection as well as the data timeout. Note that this timer resets on
+each successful I/O event, so a transfer that trickles data slowly will not be interrupted by this
+setting alone.</para>
+<para><literal>Acquire::http::DlTimeout</literal> sets a maximum wall-clock duration in seconds for
+a single file transfer. If the download does not complete within this time, the method exits with a
+transient failure. A transient failure causes APT to retry the item; with the
+<literal>mirror://</literal> transport the next mirror in the list is tried, while with a plain
+http/https source the same URI is retried up to <literal>Acquire::Retries</literal> times (default
+3). Defaults to 0 (disabled).</para>
+<para><literal>Acquire::http::DlMinimumSpeed</literal> sets a minimum acceptable download speed in
+kilobytes per second. If the average speed over the measurement window falls below this value the
+method exits with a transient failure, allowing APT to retry (see <literal>DlTimeout</literal> above
+for retry behaviour). The measurement window length is controlled by
+<literal>Acquire::http::DlMinimumSpeedWindow</literal> (in seconds, default 60). Both default to 0
+(disabled). Note that <literal>DlMinimumSpeedWindow</literal> should be set to a value greater than
+<literal>Acquire::http::Timeout</literal> (default 30 seconds): if no data arrives for that long the
+inactivity timeout fires first, and the speed window would never complete a full measurement
+cycle.</para>
 <para>The used bandwidth can be limited with
 <literal>Acquire::http::Dl-Limit</literal> which accepts integer values in
 kilobytes per second. The default value is 0 which deactivates the limit and
@@ -118,6 +135,9 @@ Acquire::http {
 	Max-Age "3600";
 	No-Store "true";
 	Timeout "10";
+	DlTimeout "1200";
+	DlMinimumSpeed "100";
+	DlMinimumSpeedWindow "60";
 	Dl-Limit "42";
 	Pipeline-Depth "0";
 	AllowRedirect "false";
