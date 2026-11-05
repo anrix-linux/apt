@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apt 2.9.30\n"
 "Report-Msgid-Bugs-To: APT Development Team <deity@lists.debian.org>\n"
-"POT-Creation-Date: 2026-01-05 22:58+0100\n"
+"POT-Creation-Date: 2026-11-05 14:53+0000\n"
 "PO-Revision-Date: 2025-02-26 11:30+0300\n"
 "Last-Translator: Алексей Шилин <shilin.aleksej@gmail.com>\n"
 "Language-Team: Russian <debian-l10n-russian@lists.debian.org>\n"
@@ -899,6 +899,12 @@ msgstr "Невозможно выполнить mkstemp %s"
 #, c-format
 msgid "Unable to write to %s"
 msgstr "Невозможно записать в %s"
+
+#: apt-pkg/contrib/hashes.cc
+#, fuzzy, c-format
+#| msgid "Could not open file %s"
+msgid "Computing the %s hash failed: %s"
+msgstr "Не удалось открыть файл %s"
 
 #: apt-pkg/contrib/mmap.cc
 msgid "Can't mmap an empty file"

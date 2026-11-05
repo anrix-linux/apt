@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apt 1.0.5\n"
 "Report-Msgid-Bugs-To: APT Development Team <deity@lists.debian.org>\n"
-"POT-Creation-Date: 2026-01-05 22:58+0100\n"
+"POT-Creation-Date: 2026-11-05 14:53+0000\n"
 "PO-Revision-Date: 2008-11-20 23:27+0530\n"
 "Last-Translator: Sampada <sampadanakhare@gmail.com>\n"
 "Language-Team: Marathi, janabhaaratii, C-DAC, Mumbai, India "
@@ -825,6 +825,12 @@ msgstr "%s स्टॅट करण्यास असमर्थ"
 #, c-format
 msgid "Unable to write to %s"
 msgstr "%s मध्ये लिहिण्यास असमर्थ "
+
+#: apt-pkg/contrib/hashes.cc
+#, fuzzy, c-format
+#| msgid "Could not open file %s"
+msgid "Computing the %s hash failed: %s"
+msgstr "%s फाईल उघडता येत नाही"
 
 #: apt-pkg/contrib/mmap.cc
 msgid "Can't mmap an empty file"

@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apt 1.4~beta1\n"
 "Report-Msgid-Bugs-To: APT Development Team <deity@lists.debian.org>\n"
-"POT-Creation-Date: 2026-01-05 22:58+0100\n"
+"POT-Creation-Date: 2026-11-05 14:53+0000\n"
 "PO-Revision-Date: 2025-03-13 16:18+0100\n"
 "Last-Translator: poc senderi <pocsenderi@protonmail.com>\n"
 "Language-Team: Catalan <debian-l10n-catalan@lists.debian.org>\n"
@@ -891,6 +891,12 @@ msgstr "No es pot fer «mkstemp» %s"
 #, c-format
 msgid "Unable to write to %s"
 msgstr "No es pot escriure a %s"
+
+#: apt-pkg/contrib/hashes.cc
+#, fuzzy, c-format
+#| msgid "Could not open file %s"
+msgid "Computing the %s hash failed: %s"
+msgstr "No s'ha pogut obrir el fitxer %s"
 
 #: apt-pkg/contrib/mmap.cc
 msgid "Can't mmap an empty file"
