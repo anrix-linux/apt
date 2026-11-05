@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apt 3.1.15\n"
 "Report-Msgid-Bugs-To: APT Development Team <deity@lists.debian.org>\n"
-"POT-Creation-Date: 2026-03-18 18:34+0000\n"
+"POT-Creation-Date: 2026-11-05 14:53+0000\n"
 "PO-Revision-Date: 2026-02-05 23:58+0000\n"
 "Last-Translator: Américo Monteiro <a_monteiro@gmx.com>\n"
 "Language-Team: Portuguese <>\n"
@@ -888,6 +888,12 @@ msgstr "Incapaz de fazer mkstemp %s"
 #, c-format
 msgid "Unable to write to %s"
 msgstr "Incapaz de escrever para %s"
+
+#: apt-pkg/contrib/hashes.cc
+#, fuzzy, c-format
+#| msgid "Could not parse file: %s"
+msgid "Computing the %s hash failed: %s"
+msgstr "Não pude analisar ficheiro: %s"
 
 #: apt-pkg/contrib/mmap.cc
 msgid "Can't mmap an empty file"

@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apt 3.1.11\n"
 "Report-Msgid-Bugs-To: APT Development Team <deity@lists.debian.org>\n"
-"POT-Creation-Date: 2026-02-17 10:38+0000\n"
+"POT-Creation-Date: 2026-11-05 14:53+0000\n"
 "PO-Revision-Date: 2025-10-28 14:36+0100\n"
 "Last-Translator: Frans Spiesschaert <Frans.Spiesschaert@yucom.be>\n"
 "Language-Team: Debian Dutch l10n Team <debian-l10n-dutch@lists.debian.org>\n"
@@ -905,6 +905,12 @@ msgstr "Kan tijdelijk bestand %s niet aanmaken met mkstemp"
 #, c-format
 msgid "Unable to write to %s"
 msgstr "Kan niet naar %s schrijven"
+
+#: apt-pkg/contrib/hashes.cc
+#, fuzzy, c-format
+#| msgid "Could not parse file: %s"
+msgid "Computing the %s hash failed: %s"
+msgstr "Kon bestand niet ontleden: %s"
 
 #: apt-pkg/contrib/mmap.cc
 msgid "Can't mmap an empty file"

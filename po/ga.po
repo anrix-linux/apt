@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apt 3.1.4\n"
 "Report-Msgid-Bugs-To: APT Development Team <deity@lists.debian.org>\n"
-"POT-Creation-Date: 2026-01-05 22:58+0100\n"
+"POT-Creation-Date: 2026-11-05 14:53+0000\n"
 "PO-Revision-Date: 2025-12-27 12:56+0000\n"
 "Last-Translator: Aindriú Mac Giolla Eoin <aindriu80@gmail.com>\n"
 "Language-Team: Irish\n"
@@ -885,6 +885,12 @@ msgstr "Ní féidir %s a mkstemp"
 #, c-format
 msgid "Unable to write to %s"
 msgstr "Ní féidir scríobh chuig %s"
+
+#: apt-pkg/contrib/hashes.cc
+#, fuzzy, c-format
+#| msgid "Could not parse file: %s"
+msgid "Computing the %s hash failed: %s"
+msgstr "Níorbh fhéidir an comhad a pharsáil: %s"
 
 #: apt-pkg/contrib/mmap.cc
 msgid "Can't mmap an empty file"
