@@ -164,24 +164,50 @@ bool DoUpdate()
    if (_config->FindB("APT::Cmd::Show-Update-Stats", false) == true)
    {
       int upgradable = 0;
+      int phased = 0;
+
       if (Cache.Open(false) == false)
          return false;
       for (pkgCache::PkgIterator I = Cache->PkgBegin(); I.end() != true; ++I)
       {
          pkgDepCache::StateCache &state = Cache[I];
-         if (I->CurrentVer != 0 && state.Upgradable() && state.CandidateVer != NULL)
-            upgradable++;
+
+	 if (I->CurrentVer == 0 || state.CandidateVer == NULL)
+	    continue;
+
+	 if (state.Upgradable())
+	 {
+	    if (Cache->PhasingApplied(I))
+	       ++phased;
+	    else
+	       ++upgradable;
+	 }
+
       }
-      const char *msg = P_(
-         "%i package can be upgraded. Run 'apt list --upgradable' to see it.\n",
-         "%i packages can be upgraded. Run 'apt list --upgradable' to see them.\n",
-         upgradable);
-      if (upgradable == 0)
+      if (upgradable == 0 && phased == 0)
          c1out << _("All packages are up to date.") << std::endl;
       else
       {
 	 c1out << _config->Find("APT::Color::Bold");
-	 ioprintf(c1out, msg, upgradable);
+
+	 if (phased > 0)
+	 {
+	    const char *msg = P_(
+	       "%i package is held back due to phasing.\n",
+	       "%i packages are held back due to phasing.\n",
+	       phased);
+	    ioprintf(c1out, msg, phased);
+	 }
+
+	 if (upgradable > 0)
+	 {
+	    const char *msg = P_(
+	       "%i package can be upgraded. Run 'apt list --upgradable' to see it.\n",
+	       "%i packages can be upgraded. Run 'apt list --upgradable' to see them.\n",
+	       upgradable);
+	    ioprintf(c1out, msg, upgradable);
+	 }
+
 	 c1out << _config->Find("APT::Color::Neutral");
       }
 
